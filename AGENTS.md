@@ -34,14 +34,17 @@
   - `name`
   - `level`
   - `target`
-  - `skip`
-  - `skip_all`
   - `fields(...)` の中の `%expr`
 - 禁止:
+  - デフォルト引数記録
   - `fields(...)` の中の `?expr`
   - 裸の field 値
   - `err`
   - `ret`
+
+`safe_instrument` は常に implicit `skip_all` として振る舞い、
+telemetry に出す値は `fields(...)` の `%expr` からだけ明示的に opt-in させる。
+ここを緩めると、`instrument` の ambient `Debug` 記録が最も危険な抜け道になる。
 
 `err` / `ret` を禁止する理由:
 - error や return value 全体を ambient な `Debug` / `Display` に委ねやすい

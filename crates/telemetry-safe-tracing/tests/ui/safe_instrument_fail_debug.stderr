@@ -1,0 +1,5 @@
+error: `?expr` is intentionally unsupported in safe_instrument; use `%expr` with a ToTelemetry value instead
+ --> tests/ui/safe_instrument_fail_debug.rs:7:36
+  |
+7 | #[safe_instrument(fields(user.id = ?user_id))]
+  |                                    ^

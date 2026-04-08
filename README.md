@@ -95,12 +95,17 @@ fn main() {
 
 特に `telemetry-safe-tracing` の `#[safe_instrument]` では、この方針を厳密に守ります。
 
+- 関数引数のデフォルト記録は常に無効化する
 - `fields(...)` では `%expr` のような明示 opt-in だけを許可する
 - `?expr` は許可しない
 - `err` / `ret` は第1版では許可しない
 
 `err` / `ret` は便利ですが、関数全体の error / return value をまとめて出してしまいやすく、
 「何を出すか」を型ではなく ambient な `Debug` / `Display` に委ねるため、PII 混入リスクが高いからです。
+
+また、`tracing::instrument` のデフォルト挙動は関数引数を `Debug` で記録するため、
+`safe_instrument` は常に implicit `skip_all` として振る舞います。
+telemetry に出したい値は、`fields(...)` の `%expr` で明示的に opt-in してください。
 
 ## workspace 構成
 

@@ -1,0 +1,5 @@
+error: `err` and `ret` are intentionally unsupported in safe_instrument; record explicit safe fields instead
+ --> tests/ui/safe_instrument_fail_err.rs:3:19
+  |
+3 | #[safe_instrument(err)]
+  |                   ^^^
