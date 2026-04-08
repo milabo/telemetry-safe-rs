@@ -4,11 +4,16 @@ error[E0277]: the trait bound `String: ToTelemetry` is not satisfied
 3 | #[derive(ToTelemetry)]
   |          ^^^^^^^^^^^ the trait `ToTelemetry` is not implemented for `String`
   |
-help: the trait `ToTelemetry` is implemented for `str`
- --> $WORKSPACE/crates/telemetry-safe-core/src/lib.rs
-  |
-  | impl ToTelemetry for str {
-  | ^^^^^^^^^^^^^^^^^^^^^^^^
+  = help: the following other types implement trait `ToTelemetry`:
+            &T
+            BTreeMap<K, V>
+            BTreeSet<T>
+            Box<T>
+            IpAddr
+            Ipv4Addr
+            Ipv6Addr
+            NonZero<i128>
+          and $N others
 note: required by a bound in `telemetry_debug`
  --> $WORKSPACE/crates/telemetry-safe-core/src/lib.rs
   |

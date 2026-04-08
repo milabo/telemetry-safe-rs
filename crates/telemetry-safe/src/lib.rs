@@ -14,12 +14,13 @@ mod tests {
     #![allow(dead_code)]
 
     use super::{ToTelemetry, telemetry};
+    use std::fmt::{self, Formatter};
     use std::collections::{BTreeMap, BTreeSet};
 
     #[derive(ToTelemetry)]
     struct AccountSnapshot {
         id: u64,
-        state: &'static str,
+        state: AccountState,
         #[telemetry(skip)]
         secret_note: &'static str,
     }
@@ -32,14 +33,30 @@ mod tests {
 
     #[derive(ToTelemetry)]
     struct RejectReason {
-        code: &'static str,
+        code: RejectCode,
+    }
+
+    struct AccountState(&'static str);
+
+    impl ToTelemetry for AccountState {
+        fn fmt_telemetry(&self, f: &mut Formatter<'_>) -> fmt::Result {
+            f.write_str(self.0)
+        }
+    }
+
+    struct RejectCode(&'static str);
+
+    impl ToTelemetry for RejectCode {
+        fn fmt_telemetry(&self, f: &mut Formatter<'_>) -> fmt::Result {
+            f.write_str(self.0)
+        }
     }
 
     #[test]
     fn derived_struct_skips_sensitive_fields() {
         let snapshot = AccountSnapshot {
             id: 42,
-            state: "active",
+            state: AccountState("active"),
             secret_note: "pii",
         };
 
@@ -51,7 +68,9 @@ mod tests {
 
     #[test]
     fn derived_enum_formats_variants() {
-        let outcome = Outcome::Rejected(RejectReason { code: "policy" });
+        let outcome = Outcome::Rejected(RejectReason {
+            code: RejectCode("policy"),
+        });
 
         assert_eq!(
             telemetry(&outcome).to_string(),
@@ -66,7 +85,7 @@ mod tests {
             1_u64,
             AccountSnapshot {
                 id: 7,
-                state: "pending",
+                state: AccountState("pending"),
                 secret_note: "hidden",
             },
         );
@@ -85,7 +104,7 @@ mod tests {
     fn display_wrapper_can_be_used_in_format_args() {
         let snapshot = AccountSnapshot {
             id: 1,
-            state: "active",
+            state: AccountState("active"),
             secret_note: "hidden",
         };
 

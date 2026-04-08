@@ -15,6 +15,7 @@
 
 ```rust
 use telemetry_safe::{telemetry, ToTelemetry};
+use std::fmt::{self, Formatter};
 
 #[derive(ToTelemetry)]
 struct UserId(u64);
@@ -22,14 +23,22 @@ struct UserId(u64);
 #[derive(ToTelemetry)]
 struct LoginAttempt {
     user_id: UserId,
-    outcome: &'static str,
+    outcome: OutcomeLabel,
     #[telemetry(skip)]
     email: String,
 }
 
+struct OutcomeLabel(&'static str);
+
+impl ToTelemetry for OutcomeLabel {
+    fn fmt_telemetry(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        f.write_str(self.0)
+    }
+}
+
 let attempt = LoginAttempt {
     user_id: UserId(42),
-    outcome: "accepted",
+    outcome: OutcomeLabel("accepted"),
     email: "user@example.com".to_owned(),
 };
 
@@ -88,6 +97,8 @@ fn main() {
 
 - `String` / `&str` を blanket では許可しない
   - 文字列は安全な識別子なのか、未検査のユーザー入力なのかを型で区別したいためです
+- 固定文字列を許可したい場合でも、暗黙には通さない
+  - feature-gated な `trusted_literal` のような明示 marker がない限り、文字列は safe とみなしません
 - ambient な `Debug` / `Display` をそのまま信用しない
   - 既存実装に PII が混ざっていても、trait 名だけでは安全性が分からないためです
 - backend ごとの便利機能より、fail-closed を優先する
@@ -99,6 +110,7 @@ fn main() {
 - `fields(...)` では `%expr` のような明示 opt-in だけを許可する
 - `?expr` は許可しない
 - `err` / `ret` は第1版では許可しない
+- `&'static str` も暗黙には許可しない
 
 `err` / `ret` は便利ですが、関数全体の error / return value をまとめて出してしまいやすく、
 「何を出すか」を型ではなく ambient な `Debug` / `Display` に委ねるため、PII 混入リスクが高いからです。
@@ -106,6 +118,11 @@ fn main() {
 また、`tracing::instrument` のデフォルト挙動は関数引数を `Debug` で記録するため、
 `safe_instrument` は常に implicit `skip_all` として振る舞います。
 telemetry に出したい値は、`fields(...)` の `%expr` で明示的に opt-in してください。
+
+もしプロダクト側の判断で固定文字列だけを許可したい場合は、
+`telemetry-safe-tracing` の `trusted-literal` feature を有効にして
+`%trusted_literal("signup")` のような明示 marker を使います。
+それでも一般の `&str` は通らず、`&'static str` に限定されます。
 
 ## workspace 構成
 
@@ -128,6 +145,7 @@ proc-macro や `tracing` の都合で API 全体が引っ張られないよう�
 - `fmt` ベースにしているのは、高頻度の telemetry 経路で余計な allocation を増やさないためです
 - `Debug` をそのまま許可しないのは、既存実装に PII が含まれていても型上は区別できないためです
 - `String` を blanket に許可しないのは、「安全な文字列」と「まだ判断していない文字列」を区別したいためです
+- `&'static str` も blanket に許可しないのは、借用か所有かではなく、安全判断の有無を境界にしたいためです
 - まずは本体 crate を backend 非依存に保ち、`tracing` 連携は別の薄い crate に分ける想定です
 
 ## あなたのプロダクトでの試し方

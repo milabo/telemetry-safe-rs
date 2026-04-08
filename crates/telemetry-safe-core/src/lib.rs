@@ -105,12 +105,6 @@ impl_to_telemetry_via_display!(
     std::net::SocketAddrV6
 );
 
-impl ToTelemetry for str {
-    fn fmt_telemetry(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        f.write_str(self)
-    }
-}
-
 impl<T: ToTelemetry + ?Sized> ToTelemetry for &T {
     fn fmt_telemetry(&self, f: &mut Formatter<'_>) -> fmt::Result {
         (*self).fmt_telemetry(f)

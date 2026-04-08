@@ -22,6 +22,7 @@
 - `String` / `&str` の blanket 許可はしない
 - 既存の `Debug` / `Display` をそのまま safe とみなさない
 - 明示的な値オブジェクトや wrapper で安全性を表現する
+- 固定文字列を許可する場合でも、暗黙ではなく marker 付き opt-in にする
 
 ## `safe_instrument` の原則
 
@@ -39,8 +40,8 @@
   - デフォルト引数記録
   - `fields(...)` の中の `?expr`
   - 裸の field 値
-  - `err`
-  - `ret`
+- `err`
+- `ret`
 
 `safe_instrument` は常に implicit `skip_all` として振る舞い、
 telemetry に出す値は `fields(...)` の `%expr` からだけ明示的に opt-in させる。
@@ -50,6 +51,11 @@ telemetry に出す値は `fields(...)` の `%expr` からだけ明示的に opt
 - error や return value 全体を ambient な `Debug` / `Display` に委ねやすい
 - どの field が安全なのかを局所的に判断できない
 - 一度許可すると、後から制限を強めるのが breaking になりやすい
+
+`&'static str` を blanket に許可しない理由:
+- 文字列リテラルを楽にしたい気持ちは理解できるが、一般の `&str` との境界が利用側に伝わりにくい
+- 借用形式であることと safe であることは無関係
+- 許可するなら `trusted_literal` のような feature-gated helper で、明示 marker を必須にする
 
 ## コメント方針
 
