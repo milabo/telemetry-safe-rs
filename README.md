@@ -79,6 +79,29 @@ fn main() {
 - `#[telemetry("{}")]`
   - その型の `Display` 出力を明示的に採用する
 
+## Safety Policy
+
+`telemetry-safe` は「便利に telemetry を出すための薄い wrapper」ではありません。  
+目的は、PII が混入した値を review 運用ではなく型と macro で構造的に外へ出せなくすることです。
+
+この目的のため、意図的にいくつかの convenience を制限しています。
+
+- `String` / `&str` を blanket では許可しない
+  - 文字列は安全な識別子なのか、未検査のユーザー入力なのかを型で区別したいためです
+- ambient な `Debug` / `Display` をそのまま信用しない
+  - 既存実装に PII が混ざっていても、trait 名だけでは安全性が分からないためです
+- backend ごとの便利機能より、fail-closed を優先する
+  - 一部だけ緩い escape hatch を作ると、「safe」という名前に反して最も危険な経路になりやすいためです
+
+特に `telemetry-safe-tracing` の `#[safe_instrument]` では、この方針を厳密に守ります。
+
+- `fields(...)` では `%expr` のような明示 opt-in だけを許可する
+- `?expr` は許可しない
+- `err` / `ret` は第1版では許可しない
+
+`err` / `ret` は便利ですが、関数全体の error / return value をまとめて出してしまいやすく、
+「何を出すか」を型ではなく ambient な `Debug` / `Display` に委ねるため、PII 混入リスクが高いからです。
+
 ## workspace 構成
 
 - `crates/telemetry-safe-core`
