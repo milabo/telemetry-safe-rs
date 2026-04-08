@@ -101,19 +101,20 @@ fn expand_enum(data: &DataEnum) -> Result<proc_macro2::TokenStream> {
             let ident = &variant.ident;
             match &variant.fields {
                 Fields::Named(fields) => {
-                    let bindings = fields
-                        .named
-                        .iter()
-                        .map(|field| field.ident.clone().expect("named field"))
-                        .collect::<Vec<_>>();
+                    let mut bindings = Vec::new();
                     let mut formatter = Vec::new();
                     for field in &fields.named {
                         let attr = parse_field_attr(&field.attrs).transpose()?;
+                        let name = field.ident.as_ref().expect("named field");
+
                         if matches!(attr, Some(FieldAttr::Skip)) {
+                            // Skipped fields must not bind a local name, otherwise enum
+                            // patterns trigger `unused variable` warnings in downstream crates.
+                            bindings.push(quote! { #name: _ });
                             continue;
                         }
 
-                        let name = field.ident.as_ref().expect("named field");
+                        bindings.push(quote! { #name });
                         let key = LitStr::new(&name.to_string(), name.span());
                         let value = field_expr(field, quote! { #name }, attr)?;
                         formatter.push(quote! {
@@ -130,16 +131,17 @@ fn expand_enum(data: &DataEnum) -> Result<proc_macro2::TokenStream> {
                     })
                 }
                 Fields::Unnamed(fields) => {
-                    let bindings = (0..fields.unnamed.len())
-                        .map(|index| syn::Ident::new(&format!("field_{index}"), ident.span()))
-                        .collect::<Vec<_>>();
+                    let mut bindings = Vec::new();
                     let mut formatter = Vec::new();
-                    for (field, binding) in fields.unnamed.iter().zip(bindings.iter()) {
+                    for (index, field) in fields.unnamed.iter().enumerate() {
                         let attr = parse_field_attr(&field.attrs).transpose()?;
                         if matches!(attr, Some(FieldAttr::Skip)) {
+                            bindings.push(quote! { _ });
                             continue;
                         }
 
+                        let binding = syn::Ident::new(&format!("field_{index}"), ident.span());
+                        bindings.push(quote! { #binding });
                         let value = field_expr(field, quote! { #binding }, attr)?;
                         formatter.push(quote! {
                             ds.field(&#value);

@@ -1,3 +1,5 @@
+#![deny(warnings)]
+
 use telemetry_safe::{ToTelemetry, telemetry};
 
 #[derive(ToTelemetry)]
@@ -11,6 +13,15 @@ struct LoginAttempt {
     email: String,
 }
 
+#[derive(ToTelemetry)]
+enum InternalEvent {
+    Audit {
+        code: UserId,
+        #[telemetry(skip)]
+        message: String,
+    },
+}
+
 fn main() {
     let attempt = LoginAttempt {
         id: UserId(10),
@@ -22,4 +33,11 @@ fn main() {
         telemetry(&attempt).to_string(),
         "LoginAttempt { id: UserId(10), outcome: accepted }"
     );
+
+    let event = InternalEvent::Audit {
+        code: UserId(20),
+        message: "sensitive".to_owned(),
+    };
+
+    assert_eq!(telemetry(&event).to_string(), "Audit { code: UserId(20) }");
 }
