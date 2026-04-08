@@ -1,0 +1,17 @@
+error[E0277]: the trait bound `String: ToTelemetry` is not satisfied
+ --> tests/ui/derive_fail_raw_string.rs:3:10
+  |
+3 | #[derive(ToTelemetry)]
+  |          ^^^^^^^^^^^ the trait `ToTelemetry` is not implemented for `String`
+  |
+help: the trait `ToTelemetry` is implemented for `str`
+ --> src/lib.rs
+  |
+  | impl ToTelemetry for str {
+  | ^^^^^^^^^^^^^^^^^^^^^^^^
+note: required by a bound in `telemetry_debug`
+ --> src/lib.rs
+  |
+  | pub fn telemetry_debug<T: ToTelemetry + ?Sized>(value: &T) -> TelemetryDebug<'_, T> {
+  |                           ^^^^^^^^^^^ required by this bound in `telemetry_debug`
+  = note: this error originates in the derive macro `ToTelemetry` (in Nightly builds, run with -Z macro-backtrace for more info)

@@ -4,3 +4,7 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+telemetry-safe-derive = { path = "telemetry-safe-derive" }
+
+[dev-dependencies]
+trybuild = "1.0.114"
