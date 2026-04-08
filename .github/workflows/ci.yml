@@ -14,13 +14,27 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@stable
+      - name: Set up Rust cache
+        uses: actions/cache@v4
         with:
-          components: clippy
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
 
-      - name: Cache cargo artifacts
-        uses: Swatinem/rust-cache@v2
+      - name: Install stable Rust with clippy
+        shell: bash
+        run: |
+          # Some orgs allow only GitHub-authored actions. Using rustup here keeps
+          # the workflow portable without depending on marketplace allowlists.
+          rustup toolchain install stable --profile minimal
+          rustup default stable
+          rustup component add clippy
 
       - name: Run tests
         run: cargo test
