@@ -1,0 +1,18 @@
+[package]
+name = "telemetry-safe"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+documentation.workspace = true
+rust-version.workspace = true
+description = "Compile-time safe telemetry formatting facade crate"
+readme = "../../README.md"
+
+[dependencies]
+telemetry-safe-core = { path = "../telemetry-safe-core", version = "0.1.0" }
+telemetry-safe-derive = { path = "../telemetry-safe-derive", version = "0.1.0" }
+
+[dev-dependencies]
+trybuild.workspace = true

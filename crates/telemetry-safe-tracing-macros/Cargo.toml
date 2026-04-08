@@ -1,0 +1,18 @@
+[package]
+name = "telemetry-safe-tracing-macros"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+documentation = "https://docs.rs/telemetry-safe-tracing"
+rust-version.workspace = true
+description = "Tracing proc macros for telemetry-safe"
+
+[lib]
+proc-macro = true
+
+[dependencies]
+proc-macro2.workspace = true
+quote.workspace = true
+syn.workspace = true

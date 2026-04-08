@@ -1,12 +1,25 @@
-[package]
-name = "telemetry-safe"
+[workspace]
+members = [
+    "crates/telemetry-safe-core",
+    "crates/telemetry-safe-derive",
+    "crates/telemetry-safe",
+    "crates/telemetry-safe-tracing",
+    "crates/telemetry-safe-tracing-macros",
+]
+resolver = "2"
+
+[workspace.package]
 version = "0.1.0"
 edition = "2024"
-description = "Compile-time safe telemetry formatting primitives"
-readme = "README.md"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/milabo/telemetry-safe-rs"
+homepage = "https://github.com/milabo/telemetry-safe-rs"
+documentation = "https://docs.rs/telemetry-safe"
+rust-version = "1.85"
 
-[dependencies]
-telemetry-safe-derive = { path = "telemetry-safe-derive" }
-
-[dev-dependencies]
+[workspace.dependencies]
+proc-macro2 = "1.0.101"
+quote = "1.0.41"
+syn = { version = "2.0.106", features = ["extra-traits", "full"] }
+tracing = "0.1.41"
 trybuild = "1.0.114"

@@ -5,12 +5,12 @@ error[E0277]: the trait bound `String: ToTelemetry` is not satisfied
   |          ^^^^^^^^^^^ the trait `ToTelemetry` is not implemented for `String`
   |
 help: the trait `ToTelemetry` is implemented for `str`
- --> src/lib.rs
+ --> $WORKSPACE/crates/telemetry-safe-core/src/lib.rs
   |
   | impl ToTelemetry for str {
   | ^^^^^^^^^^^^^^^^^^^^^^^^
 note: required by a bound in `telemetry_debug`
- --> src/lib.rs
+ --> $WORKSPACE/crates/telemetry-safe-core/src/lib.rs
   |
   | pub fn telemetry_debug<T: ToTelemetry + ?Sized>(value: &T) -> TelemetryDebug<'_, T> {
   |                           ^^^^^^^^^^^ required by this bound in `telemetry_debug`

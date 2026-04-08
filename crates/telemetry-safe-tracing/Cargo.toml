@@ -1,0 +1,15 @@
+[package]
+name = "telemetry-safe-tracing"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+documentation = "https://docs.rs/telemetry-safe-tracing"
+rust-version.workspace = true
+description = "Tracing integration for telemetry-safe"
+
+[dependencies]
+telemetry-safe = { path = "../telemetry-safe", version = "0.1.0" }
+telemetry-safe-tracing-macros = { path = "../telemetry-safe-tracing-macros", version = "0.1.0" }
+tracing.workspace = true

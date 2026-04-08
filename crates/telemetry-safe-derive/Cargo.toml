@@ -1,0 +1,18 @@
+[package]
+name = "telemetry-safe-derive"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+documentation = "https://docs.rs/telemetry-safe-derive"
+rust-version.workspace = true
+description = "Derive macros for compile-time safe telemetry formatting"
+
+[lib]
+proc-macro = true
+
+[dependencies]
+proc-macro2.workspace = true
+quote.workspace = true
+syn.workspace = true

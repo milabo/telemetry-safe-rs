@@ -14,7 +14,7 @@
 ## 使い方
 
 ```rust
-use telemetry_safe::prelude::*;
+use telemetry_safe::{telemetry, ToTelemetry};
 
 #[derive(ToTelemetry)]
 struct UserId(u64);
@@ -40,6 +40,7 @@ assert_eq!(
 ```
 
 `telemetry(&value)` は `Display` として扱えます。`tracing` なら `%telemetry(&value)` のような導線を想定しています。
+なお derive macro は `telemetry_safe::ToTelemetry` から、helper 関数群は `telemetry_safe::prelude::*` から取るのが基本です。
 
 ## コンパイルエラーになる例
 
@@ -77,6 +78,22 @@ fn main() {
   - フィールドを出力対象から外す
 - `#[telemetry("{}")]`
   - その型の `Display` 出力を明示的に採用する
+
+## workspace 構成
+
+- `crates/telemetry-safe-core`
+  - trait と adapter だけを置く最小コア
+- `crates/telemetry-safe-derive`
+  - `#[derive(ToTelemetry)]` と field attribute
+- `crates/telemetry-safe`
+  - 通常の利用者が依存する facade crate
+- `crates/telemetry-safe-tracing`
+  - `tracing` integration の公開入口
+- `crates/telemetry-safe-tracing-macros`
+  - `safe_instrument` など attribute macro の実装置き場
+
+`tracing` 連携を別 crate に分けているのは、core の安全モデルを backend 非依存のまま保ちつつ、
+proc-macro や `tracing` の都合で API 全体が引っ張られないようにするためです。
 
 ## 設計メモ
 

@@ -1,12 +1,6 @@
-#![doc = include_str!("../README.md")]
-
-// Derive macros refer to the public crate path so downstream crates and this
-// crate's own tests expand identically.
-extern crate self as telemetry_safe;
+//! Core primitives for compile-time safe telemetry formatting.
 
 use std::fmt::{self, Debug, Display, Formatter};
-
-pub use telemetry_safe_derive::ToTelemetry;
 
 /// Formats a value only through an explicitly approved telemetry representation.
 pub trait ToTelemetry {
@@ -62,11 +56,6 @@ pub fn telemetry<T: ToTelemetry + ?Sized>(value: &T) -> TelemetryDisplay<'_, T> 
 /// Exposes a telemetry-safe value as `Debug`.
 pub fn telemetry_debug<T: ToTelemetry + ?Sized>(value: &T) -> TelemetryDebug<'_, T> {
     TelemetryDebug::new(value)
-}
-
-/// Re-exports the small surface most applications need at call sites.
-pub mod prelude {
-    pub use crate::{ToTelemetry, telemetry, telemetry_debug};
 }
 
 macro_rules! impl_to_telemetry_via_display {
@@ -199,95 +188,34 @@ impl<T: ToTelemetry> ToTelemetry for std::collections::BTreeSet<T> {
     }
 }
 
+/// Re-exports the small surface most applications need at call sites.
+pub mod prelude {
+    pub use crate::{ToTelemetry, telemetry, telemetry_debug};
+}
+
 #[cfg(test)]
 mod tests {
-    #![allow(dead_code)]
-
     use super::{ToTelemetry, telemetry};
-    use std::collections::{BTreeMap, BTreeSet};
+    use std::fmt::{self, Formatter};
 
-    #[derive(ToTelemetry)]
-    struct AccountSnapshot {
-        id: u64,
-        state: &'static str,
-        #[telemetry(skip)]
-        secret_note: &'static str,
-    }
+    struct Token(u64);
 
-    #[derive(ToTelemetry)]
-    enum Outcome {
-        Accepted { account: AccountSnapshot },
-        Rejected(RejectReason),
-    }
-
-    #[derive(ToTelemetry)]
-    struct RejectReason {
-        code: &'static str,
+    impl ToTelemetry for Token {
+        fn fmt_telemetry(&self, f: &mut Formatter<'_>) -> fmt::Result {
+            write!(f, "token-{}", self.0)
+        }
     }
 
     #[test]
-    fn derived_struct_skips_sensitive_fields() {
-        let snapshot = AccountSnapshot {
-            id: 42,
-            state: "active",
-            secret_note: "pii",
-        };
-
-        assert_eq!(
-            telemetry(&snapshot).to_string(),
-            r#"AccountSnapshot { id: 42, state: active }"#
-        );
-    }
-
-    #[test]
-    fn derived_enum_formats_variants() {
-        let outcome = Outcome::Rejected(RejectReason { code: "policy" });
-
-        assert_eq!(
-            telemetry(&outcome).to_string(),
-            r#"Rejected(RejectReason { code: policy })"#
-        );
-    }
-
-    #[test]
-    fn collections_require_safe_elements() {
-        let mut map = BTreeMap::new();
-        map.insert(
-            1_u64,
-            AccountSnapshot {
-                id: 7,
-                state: "pending",
-                secret_note: "hidden",
-            },
-        );
-
-        let mut set = BTreeSet::new();
-        set.insert(1_u64);
-
-        assert_eq!(
-            telemetry(&map).to_string(),
-            r#"{1: AccountSnapshot { id: 7, state: pending }}"#
-        );
-        assert_eq!(telemetry(&set).to_string(), "{1}");
-    }
-
-    #[test]
-    fn primitives_remain_ergonomic() {
+    fn primitives_and_manual_types_are_displayable() {
         assert_eq!(telemetry(&123_u64).to_string(), "123");
-        assert_eq!(telemetry(&Some(5_u64)).to_string(), "Some(5)");
-        assert_eq!(telemetry(&"safe").to_string(), "safe");
+        assert_eq!(telemetry(&Token(7)).to_string(), "token-7");
+        assert_eq!(telemetry(&Some(Token(2))).to_string(), "Some(token-2)");
     }
 
     #[test]
-    fn display_wrapper_can_be_used_in_format_args() {
-        let snapshot = AccountSnapshot {
-            id: 1,
-            state: "active",
-            secret_note: "hidden",
-        };
-
-        let rendered = format!("account={}", telemetry(&snapshot));
-
-        assert_eq!(rendered, "account=AccountSnapshot { id: 1, state: active }");
+    fn collections_use_safe_rendering_recursively() {
+        let values = vec![Token(1), Token(2)];
+        assert_eq!(telemetry(&values).to_string(), "[token-1, token-2]");
     }
 }
