@@ -1,4 +1,4 @@
-//! Safe telemetry formatting primitives.
+#![doc = include_str!("../README.md")]
 
 // Derive macros refer to the public crate path so downstream crates and this
 // crate's own tests expand identically.
@@ -21,6 +21,13 @@ pub trait ToTelemetry {
 #[must_use]
 pub struct TelemetryDisplay<'a, T: ?Sized>(&'a T);
 
+impl<'a, T: ToTelemetry + ?Sized> TelemetryDisplay<'a, T> {
+    /// Creates a `Display` adapter for telemetry backends that accept `%value`.
+    pub fn new(value: &'a T) -> Self {
+        Self(value)
+    }
+}
+
 impl<T: ToTelemetry + ?Sized> Display for TelemetryDisplay<'_, T> {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         self.0.fmt_telemetry(f)
@@ -31,6 +38,16 @@ impl<T: ToTelemetry + ?Sized> Display for TelemetryDisplay<'_, T> {
 #[must_use]
 pub struct TelemetryDebug<'a, T: ?Sized>(&'a T);
 
+impl<'a, T: ToTelemetry + ?Sized> TelemetryDebug<'a, T> {
+    /// Creates a `Debug` adapter for APIs that only accept `?value`-style inputs.
+    ///
+    /// Keeping this separate from `Display` avoids accidentally widening the
+    /// surface area to the ambient `Debug` implementation of the wrapped type.
+    pub fn new(value: &'a T) -> Self {
+        Self(value)
+    }
+}
+
 impl<T: ToTelemetry + ?Sized> Debug for TelemetryDebug<'_, T> {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         self.0.fmt_telemetry(f)
@@ -39,12 +56,17 @@ impl<T: ToTelemetry + ?Sized> Debug for TelemetryDebug<'_, T> {
 
 /// Exposes a telemetry-safe value as `Display`.
 pub fn telemetry<T: ToTelemetry + ?Sized>(value: &T) -> TelemetryDisplay<'_, T> {
-    TelemetryDisplay(value)
+    TelemetryDisplay::new(value)
 }
 
 /// Exposes a telemetry-safe value as `Debug`.
 pub fn telemetry_debug<T: ToTelemetry + ?Sized>(value: &T) -> TelemetryDebug<'_, T> {
-    TelemetryDebug(value)
+    TelemetryDebug::new(value)
+}
+
+/// Re-exports the small surface most applications need at call sites.
+pub mod prelude {
+    pub use crate::{ToTelemetry, telemetry, telemetry_debug};
 }
 
 macro_rules! impl_to_telemetry_via_display {

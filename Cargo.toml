@@ -2,6 +2,8 @@
 name = "telemetry-safe"
 version = "0.1.0"
 edition = "2024"
+description = "Compile-time safe telemetry formatting primitives"
+readme = "README.md"
 
 [dependencies]
 telemetry-safe-derive = { path = "telemetry-safe-derive" }
