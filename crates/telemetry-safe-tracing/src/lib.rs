@@ -13,6 +13,36 @@ pub use tracing;
 // to know which helper crate owns the implementation details.
 extern crate self as telemetry_safe_tracing;
 
+#[doc(hidden)]
+pub mod __private {
+    use crate::{ToTelemetry, telemetry};
+    use crate::tracing::{Span, field};
+
+    /// Records return values through `ToTelemetry` so `safe_instrument(ret)`
+    /// never falls back to ambient `Debug` or `Display`.
+    pub fn record_ret<T: ToTelemetry>(span: &Span, value: &T) {
+        span.record("ret", field::display(telemetry(value)));
+    }
+
+    /// Records only the error side of a `Result`, keeping `err` tied to the
+    /// explicit telemetry boundary instead of `tracing`'s default formatting.
+    pub fn record_err<R: SafeInstrumentResult>(span: &Span, result: &R) {
+        result.record_err(span);
+    }
+
+    pub trait SafeInstrumentResult {
+        fn record_err(&self, span: &Span);
+    }
+
+    impl<T, E: ToTelemetry> SafeInstrumentResult for Result<T, E> {
+        fn record_err(&self, span: &Span) {
+            if let Err(err) = self {
+                span.record("err", field::display(telemetry(err)));
+            }
+        }
+    }
+}
+
 /// Marks a string literal as intentionally safe to emit from `safe_instrument`.
 ///
 /// This helper is feature-gated because allowing literals is a product-level

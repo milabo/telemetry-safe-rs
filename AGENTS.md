@@ -36,21 +36,21 @@
   - `level`
   - `target`
   - `fields(...)` の中の `%expr`
+  - `ret` (`ToTelemetry` を満たす return value のみ)
+  - `err` (`Result<T, E>` かつ `E: ToTelemetry` のみ)
 - 禁止:
   - デフォルト引数記録
   - `fields(...)` の中の `?expr`
   - 裸の field 値
-- `err`
-- `ret`
 
 `safe_instrument` は常に implicit `skip_all` として振る舞い、
 telemetry に出す値は `fields(...)` の `%expr` からだけ明示的に opt-in させる。
 ここを緩めると、`instrument` の ambient `Debug` 記録が最も危険な抜け道になる。
 
-`err` / `ret` を禁止する理由:
-- error や return value 全体を ambient な `Debug` / `Display` に委ねやすい
-- どの field が安全なのかを局所的に判断できない
-- 一度許可すると、後から制限を強めるのが breaking になりやすい
+`err` / `ret` の扱い:
+- `tracing` 標準の `err` / `ret` semantics は使わない
+- `safe_instrument(err)` / `safe_instrument(ret)` は macro 側で自前実装し、常に `ToTelemetry` を要求する
+- convenience のために ambient `Debug` / `Display` へフォールバックしない
 
 `&'static str` を blanket に許可しない理由:
 - 文字列リテラルを楽にしたい気持ちは理解できるが、一般の `&str` との境界が利用側に伝わりにくい

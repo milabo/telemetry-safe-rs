@@ -1,5 +1,5 @@
-error: `err` and `ret` are intentionally unsupported in safe_instrument; record explicit safe fields instead
- --> tests/ui/safe_instrument_fail_err.rs:3:19
+error: `err` requires a `Result`-returning function
+ --> tests/ui/safe_instrument_fail_err.rs:4:4
   |
-3 | #[safe_instrument(err)]
-  |                   ^^^
+4 | fn do_work() {}
+  |    ^^^^^^^

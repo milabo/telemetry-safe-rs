@@ -109,15 +109,37 @@ fn main() {
 - 関数引数のデフォルト記録は常に無効化する
 - `fields(...)` では `%expr` のような明示 opt-in だけを許可する
 - `?expr` は許可しない
-- `err` / `ret` は第1版では許可しない
+- `ret` / `err` は ambient `tracing` semantics ではなく、`ToTelemetry` 前提の safe semantics としてのみ許可する
 - `&'static str` も暗黙には許可しない
 
-`err` / `ret` は便利ですが、関数全体の error / return value をまとめて出してしまいやすく、
-「何を出すか」を型ではなく ambient な `Debug` / `Display` に委ねるため、PII 混入リスクが高いからです。
+`err` / `ret` は便利ですが、`tracing` 標準の挙動をそのまま通すと関数全体の error / return value を
+ambient な `Debug` / `Display` に委ねることになり、PII 混入リスクが高くなります。
+そのため `safe_instrument(err)` / `safe_instrument(ret)` は、内部で `ToTelemetry` を要求する別 semantics として実装します。
 
 また、`tracing::instrument` のデフォルト挙動は関数引数を `Debug` で記録するため、
 `safe_instrument` は常に implicit `skip_all` として振る舞います。
 telemetry に出したい値は、`fields(...)` の `%expr` で明示的に opt-in してください。
+
+```rust,ignore
+use std::fmt::{self, Formatter};
+use telemetry_safe::ToTelemetry;
+use telemetry_safe_tracing::safe_instrument;
+
+struct DomainError;
+
+impl ToTelemetry for DomainError {
+    fn fmt_telemetry(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        f.write_str("denied")
+    }
+}
+
+#[safe_instrument(err)]
+fn do_work() -> Result<(), DomainError> {
+    Err(DomainError)
+}
+```
+
+この例では `DomainError: ToTelemetry` が必要で、`String` や未検査型のままではコンパイルエラーになります。
 
 もしプロダクト側の判断で固定文字列だけを許可したい場合は、
 `telemetry-safe-tracing` の `trusted-literal` feature を有効にして
