@@ -47,6 +47,13 @@ For most users, there are only two crates to think about:
 
 There are internal crates such as `telemetry-safe-core` and `telemetry-safe-derive`, but most users should not need to depend on them directly.
 
+## License
+
+This project is available under either of the following licenses, at your option:
+
+- MIT, see [LICENSE-MIT](https://github.com/milabo/telemetry-safe-rs/blob/main/LICENSE-MIT)
+- Apache License 2.0, see [LICENSE-APACHE](https://github.com/milabo/telemetry-safe-rs/blob/main/LICENSE-APACHE)
+
 ## Installation
 
 ### 1. Start with `ToTelemetry`
