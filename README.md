@@ -1,5 +1,7 @@
 # telemetry-safe
 
+[![CI](https://github.com/milabo/telemetry-safe-rs/actions/workflows/ci.yml/badge.svg)](https://github.com/milabo/telemetry-safe-rs/actions/workflows/ci.yml)
+
 `telemetry-safe` is a Rust library for allowing only explicitly approved representations to flow into telemetry.
 
 With plain `tracing`, logging, or metrics code, it is easy to accidentally send function arguments or raw fields that contain personally identifiable information (PII).  
