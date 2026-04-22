@@ -1,4 +1,6 @@
-#![doc = include_str!("../../../README.md")]
+// `cargo package` verifies the crate from the packaged tarball, so the doc
+// source must live inside this crate rather than only at the workspace root.
+#![doc = include_str!("../README.md")]
 
 // Derive macros refer to the public crate path so downstream crates and this
 // crate's own tests expand identically.

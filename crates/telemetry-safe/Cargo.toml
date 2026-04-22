@@ -8,7 +8,7 @@ homepage.workspace = true
 documentation.workspace = true
 rust-version.workspace = true
 description = "Compile-time safe telemetry formatting facade crate"
-readme = "../../README.md"
+readme = "README.md"
 keywords = ["telemetry", "observability", "tracing", "logging", "security"]
 categories = ["development-tools::debugging", "rust-patterns"]
 
