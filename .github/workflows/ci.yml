@@ -33,14 +33,14 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-cargo-
 
-      - name: Install stable Rust with clippy
-        shell: bash
-        run: |
-          # Some orgs allow only GitHub-authored actions. Using rustup here keeps
-          # the workflow portable without depending on marketplace allowlists.
-          rustup toolchain install stable --profile minimal
-          rustup default stable
-          rustup component add clippy
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
+        with:
+          toolchain: ${{ env.RUST_TOOLCHAIN }}
+          components: ${{ env.RUST_TOOLCHAIN_COMPONENTS }}
+
+      - name: Check source code format
+        run: cargo fmt -- --check
 
       - name: Run tests
         run: cargo test
