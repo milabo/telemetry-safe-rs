@@ -8,6 +8,9 @@ homepage.workspace = true
 documentation = "https://docs.rs/telemetry-safe-tracing"
 rust-version.workspace = true
 description = "Tracing integration for telemetry-safe"
+readme = "../../README.md"
+keywords = ["telemetry", "tracing", "observability", "instrument", "security"]
+categories = ["development-tools::debugging", "rust-patterns"]
 
 [features]
 default = []

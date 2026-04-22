@@ -8,6 +8,9 @@ homepage.workspace = true
 documentation = "https://docs.rs/telemetry-safe-derive"
 rust-version.workspace = true
 description = "Derive macros for compile-time safe telemetry formatting"
+readme = "../../README.md"
+keywords = ["telemetry", "derive", "proc-macro", "tracing", "security"]
+categories = ["development-tools::procedural-macro-helpers", "rust-patterns"]
 
 [lib]
 proc-macro = true

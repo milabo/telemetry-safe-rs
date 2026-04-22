@@ -8,5 +8,8 @@ homepage.workspace = true
 documentation = "https://docs.rs/telemetry-safe-core"
 rust-version.workspace = true
 description = "Core allocation-free telemetry formatting primitives"
+readme = "../../README.md"
+keywords = ["telemetry", "observability", "tracing", "logging", "security"]
+categories = ["development-tools::debugging", "rust-patterns"]
 
 [dependencies]
