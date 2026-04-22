@@ -1,6 +1,9 @@
 # telemetry-safe
 
 [![CI](https://github.com/milabo/telemetry-safe-rs/actions/workflows/ci.yml/badge.svg)](https://github.com/milabo/telemetry-safe-rs/actions/workflows/ci.yml)
+[![crate](https://img.shields.io/crates/v/telemetry-safe.svg)](https://crates.io/crates/telemetry-safe)
+[![documentation](https://docs.rs/telemetry-safe/badge.svg)](https://docs.rs/telemetry-safe)
+[![minimum rustc 1.85](https://img.shields.io/badge/rustc-1.85+-red.svg)](https://rust-lang.github.io/rfcs/2495-min-rust-version.html)
 
 `telemetry-safe` is a Rust library for allowing only explicitly approved representations to flow into telemetry.
 
