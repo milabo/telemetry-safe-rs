@@ -6,6 +6,12 @@ on:
       - main
   pull_request:
 
+env:
+  RUST_TOOLCHAIN: "1.94"
+  RUST_TOOLCHAIN_COMPONENTS: rustfmt, clippy
+  RUST_BACKTRACE: short
+  RUSTFLAGS: "-D warnings"
+
 jobs:
   test-and-lint:
     runs-on: ubuntu-latest
