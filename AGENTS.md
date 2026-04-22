@@ -48,11 +48,13 @@ telemetry に出す値は `fields(...)` の `%expr` からだけ明示的に opt
 ここを緩めると、`instrument` の ambient `Debug` 記録が最も危険な抜け道になる。
 
 `err` / `ret` の扱い:
+
 - `tracing` 標準の `err` / `ret` semantics は使わない
 - `safe_instrument(err)` / `safe_instrument(ret)` は macro 側で自前実装し、常に `ToTelemetry` を要求する
 - convenience のために ambient `Debug` / `Display` へフォールバックしない
 
 `&'static str` を blanket に許可しない理由:
+
 - 文字列リテラルを楽にしたい気持ちは理解できるが、一般の `&str` との境界が利用側に伝わりにくい
 - 借用形式であることと safe であることは無関係
 - 許可するなら `trusted_literal` のような feature-gated helper で、明示 marker を必須にする
@@ -68,3 +70,8 @@ telemetry に出す値は `fields(...)` の `%expr` からだけ明示的に opt
 
 特に、一見すると回りくどい macro 展開、wrapper、temporary binding、compile_error の導入箇所には、
 設計意図が誤解されないよう 1〜3 行の簡潔なコメントを残します。
+
+## OSS による機密情報漏洩防止
+
+これは OSS ライブラリです。具体のプロダクト名や顧客に関する情報を、コードやコメントに記載しないようにしてください。
+含めてよいか迷う情報があれば、ユーザーに対し都度確認を行ってください。
