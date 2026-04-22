@@ -6,9 +6,9 @@
 use proc_macro::TokenStream;
 use proc_macro2::TokenTree;
 use quote::quote;
-use syn::spanned::Spanned;
 use syn::parse::{Parse, ParseStream};
 use syn::punctuated::Punctuated;
+use syn::spanned::Spanned;
 use syn::{
     Error, Expr, Ident, ItemFn, Result, ReturnType, Token, parenthesized, parse_macro_input,
 };
@@ -24,9 +24,17 @@ pub fn safe_instrument(attr: TokenStream, item: TokenStream) -> TokenStream {
     }
 }
 
-fn expand_safe_instrument(args: InstrumentArgs, item_fn: ItemFn) -> Result<proc_macro2::TokenStream> {
+fn expand_safe_instrument(
+    args: InstrumentArgs,
+    item_fn: ItemFn,
+) -> Result<proc_macro2::TokenStream> {
     let config = args.expand()?;
-    let ItemFn { attrs, vis, sig, block } = item_fn;
+    let ItemFn {
+        attrs,
+        vis,
+        sig,
+        block,
+    } = item_fn;
 
     if config.record_err && sig.output == ReturnType::Default {
         return Err(Error::new(
@@ -145,8 +153,14 @@ impl InstrumentConfig {
 
 enum InstrumentArg {
     Flag(Ident),
-    NameValue { name: Ident, value: Expr },
-    List { name: Ident, tokens: proc_macro2::TokenStream },
+    NameValue {
+        name: Ident,
+        value: Expr,
+    },
+    List {
+        name: Ident,
+        tokens: proc_macro2::TokenStream,
+    },
 }
 
 impl Parse for InstrumentArg {

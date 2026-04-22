@@ -15,8 +15,8 @@ extern crate self as telemetry_safe_tracing;
 
 #[doc(hidden)]
 pub mod __private {
-    use crate::{ToTelemetry, telemetry};
     use crate::tracing::{Span, field};
+    use crate::{ToTelemetry, telemetry};
 
     /// Records return values through `ToTelemetry` so `safe_instrument(ret)`
     /// never falls back to ambient `Debug` or `Display`.

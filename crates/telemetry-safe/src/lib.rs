@@ -14,8 +14,8 @@ mod tests {
     #![allow(dead_code)]
 
     use super::{ToTelemetry, telemetry};
-    use std::fmt::{self, Formatter};
     use std::collections::{BTreeMap, BTreeSet};
+    use std::fmt::{self, Formatter};
 
     #[derive(ToTelemetry)]
     struct AccountSnapshot {
