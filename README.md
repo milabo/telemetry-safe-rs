@@ -204,7 +204,9 @@ fn main() {
 - `#[telemetry(skip)]`
   - Omits a field from telemetry output
 - `#[telemetry("{}")]`
-  - Explicitly adopts the type’s `Display` output
+  - Explicitly adopts the type's `Display` output
+- `#[telemetry("prefix{}suffix")]` / `#[telemetry("literal")]`
+  - Allows a single curated `Display` placeholder or a fixed redacted label
 
 ## Safety policy
 

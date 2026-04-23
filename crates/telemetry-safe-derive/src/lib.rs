@@ -177,18 +177,17 @@ fn field_expr(
 ) -> Result<proc_macro2::TokenStream> {
     match attr {
         Some(FieldAttr::Display(format)) => {
-            if format.value() != "{}" {
-                return Err(Error::new(
-                    format.span(),
-                    "only #[telemetry(\"{}\")] is currently supported",
-                ));
+            // Keep the escape hatch intentionally narrow: a fixed replacement
+            // string or a single `{}` placeholder. Allowing the full format
+            // language would hide too much policy behind proc-macro magic.
+            match format {
+                DisplayFormat::Literal(literal) => Ok(quote! {
+                    ::std::format_args!("{}", #literal)
+                }),
+                DisplayFormat::Interpolated(format) => Ok(quote! {
+                    ::std::format_args!(#format, #accessor)
+                }),
             }
-
-            // `format_args!` keeps the derive path allocation-free while still allowing
-            // explicit escape hatches for types whose Display output is already curated.
-            Ok(quote! {
-                ::std::format_args!("{}", #accessor)
-            })
         }
         Some(FieldAttr::Skip) | None => {
             let ty = &field.ty;
@@ -201,8 +200,13 @@ fn field_expr(
 }
 
 enum FieldAttr {
-    Display(LitStr),
+    Display(DisplayFormat),
     Skip,
+}
+
+enum DisplayFormat {
+    Literal(LitStr),
+    Interpolated(LitStr),
 }
 
 fn parse_field_attr(attrs: &[Attribute]) -> Option<Result<FieldAttr>> {
@@ -236,10 +240,34 @@ fn parse_single_field_attr(attr: &Attribute) -> Result<FieldAttr> {
 
         match format {
             Expr::Lit(expr_lit) => match expr_lit.lit {
-                syn::Lit::Str(lit) => Ok(FieldAttr::Display(lit)),
+                syn::Lit::Str(lit) => Ok(FieldAttr::Display(parse_display_format(lit)?)),
                 other => Err(Error::new(other.span(), "expected string literal")),
             },
             other => Err(Error::new(other.span(), "expected string literal")),
         }
     })
+}
+
+fn parse_display_format(format: LitStr) -> Result<DisplayFormat> {
+    let value = format.value();
+    let placeholder_count = value.matches("{}").count();
+
+    // We intentionally reject the broader formatting mini-language so users
+    // can tell at a glance whether a field is redacted entirely or routes
+    // through exactly one curated Display representation.
+    if value.replace("{}", "").contains(['{', '}']) {
+        return Err(Error::new(
+            format.span(),
+            "only a fixed string or a single `{}` placeholder is supported",
+        ));
+    }
+
+    match placeholder_count {
+        0 => Ok(DisplayFormat::Literal(format)),
+        1 => Ok(DisplayFormat::Interpolated(format)),
+        _ => Err(Error::new(
+            format.span(),
+            "only a fixed string or a single `{}` placeholder is supported",
+        )),
+    }
 }
