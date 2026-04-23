@@ -13,8 +13,8 @@ keywords = ["telemetry", "observability", "tracing", "logging", "security"]
 categories = ["development-tools::debugging", "rust-patterns"]
 
 [dependencies]
-telemetry-safe-core = { path = "../telemetry-safe-core", version = "0.1.0" }
-telemetry-safe-derive = { path = "../telemetry-safe-derive", version = "0.1.0" }
+telemetry-safe-core = { path = "../telemetry-safe-core", version = "0.2.0" }
+telemetry-safe-derive = { path = "../telemetry-safe-derive", version = "0.2.0" }
 
 [dev-dependencies]
 trybuild.workspace = true

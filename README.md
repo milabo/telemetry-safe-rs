@@ -65,7 +65,7 @@ This project is available under either of the following licenses, at your option
 
 ```toml
 [dependencies]
-telemetry-safe = "0.1"
+telemetry-safe = "0.2"
 ```
 
 This gives you:
@@ -79,8 +79,8 @@ This gives you:
 
 ```toml
 [dependencies]
-telemetry-safe = "0.1"
-telemetry-safe-tracing = "0.1"
+telemetry-safe = "0.2"
+telemetry-safe-tracing = "0.2"
 tracing = "0.1"
 ```
 
@@ -91,8 +91,8 @@ In practice, the migration path is usually: define safe domain types first, then
 
 ```toml
 [dependencies]
-telemetry-safe = "0.1"
-telemetry-safe-tracing = { version = "0.1", features = ["trusted-literal"] }
+telemetry-safe = "0.2"
+telemetry-safe-tracing = { version = "0.2", features = ["trusted-literal"] }
 tracing = "0.1"
 ```
 
