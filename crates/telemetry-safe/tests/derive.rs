@@ -3,5 +3,6 @@ fn ui() {
     let tests = trybuild::TestCases::new();
     tests.pass("tests/ui/derive_pass.rs");
     tests.compile_fail("tests/ui/derive_fail_raw_string.rs");
+    tests.compile_fail("tests/ui/derive_fail_implicit_display.rs");
     tests.compile_fail("tests/ui/derive_fail_multiple_placeholders.rs");
 }

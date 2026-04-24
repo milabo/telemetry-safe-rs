@@ -1,8 +1,8 @@
 use telemetry_safe::ToTelemetry;
 
 #[derive(ToTelemetry)]
-struct InvalidFormat {
-    #[telemetry(display = "{}-{}")]
+struct LegacyDisplaySyntax {
+    #[telemetry("{}")]
     id: u64,
 }
 

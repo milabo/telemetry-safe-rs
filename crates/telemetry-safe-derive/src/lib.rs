@@ -188,13 +188,15 @@ fn field_expr(
     attr: Option<FieldAttr>,
 ) -> Result<proc_macro2::TokenStream> {
     match attr {
+        Some(FieldAttr::Literal(literal)) => Ok(quote! {
+            ::std::format_args!("{}", #literal)
+        }),
         Some(FieldAttr::Display(format)) => {
-            // Keep the escape hatch intentionally narrow: a fixed replacement
-            // string or a single `{}` placeholder. Allowing the full format
-            // language would hide too much policy behind proc-macro magic.
+            // `display` is spelled out in the syntax because it trusts the
+            // field's Display impl as an explicit escape hatch.
             match format {
-                DisplayFormat::Literal(literal) => Ok(quote! {
-                    ::std::format_args!("{}", #literal)
+                DisplayFormat::Implicit => Ok(quote! {
+                    ::std::format_args!("{}", #accessor)
                 }),
                 DisplayFormat::Interpolated(format) => Ok(quote! {
                     ::std::format_args!(#format, #accessor)
@@ -212,20 +214,18 @@ fn field_expr(
 }
 
 enum FieldAttr {
+    Literal(LitStr),
     Display(DisplayFormat),
     Skip,
 }
 
 enum DisplayFormat {
-    Literal(LitStr),
+    Implicit,
     Interpolated(LitStr),
 }
 
 fn field_attr_requires_binding(attr: Option<&FieldAttr>) -> bool {
-    !matches!(
-        attr,
-        Some(FieldAttr::Skip | FieldAttr::Display(DisplayFormat::Literal(_)))
-    )
+    !matches!(attr, Some(FieldAttr::Skip | FieldAttr::Literal(_)))
 }
 
 fn parse_field_attr(attrs: &[Attribute]) -> Option<Result<FieldAttr>> {
@@ -246,7 +246,24 @@ fn parse_single_field_attr(attr: &Attribute) -> Result<FieldAttr> {
                 return Ok(FieldAttr::Skip);
             }
 
-            return Err(Error::new(ident.span(), "unsupported telemetry attribute"));
+            if ident == "display" {
+                if input.is_empty() {
+                    return Ok(FieldAttr::Display(DisplayFormat::Implicit));
+                }
+
+                let _eq: Token![=] = input.parse()?;
+                let format: LitStr = input.parse()?;
+                if !input.is_empty() {
+                    return Err(input.error("unexpected tokens after display format"));
+                }
+
+                return Ok(FieldAttr::Display(parse_display_format(format)?));
+            }
+
+            return Err(Error::new(
+                ident.span(),
+                "unsupported telemetry attribute; expected `skip`, `display`, or a string literal",
+            ));
         }
 
         let format: Expr = input.parse()?;
@@ -259,7 +276,7 @@ fn parse_single_field_attr(attr: &Attribute) -> Result<FieldAttr> {
 
         match format {
             Expr::Lit(expr_lit) => match expr_lit.lit {
-                syn::Lit::Str(lit) => Ok(FieldAttr::Display(parse_display_format(lit)?)),
+                syn::Lit::Str(lit) => Ok(FieldAttr::Literal(parse_literal_format(lit)?)),
                 other => Err(Error::new(other.span(), "expected string literal")),
             },
             other => Err(Error::new(other.span(), "expected string literal")),
@@ -267,26 +284,35 @@ fn parse_single_field_attr(attr: &Attribute) -> Result<FieldAttr> {
     })
 }
 
+fn parse_literal_format(format: LitStr) -> Result<LitStr> {
+    let value = format.value();
+    if value.contains(['{', '}']) {
+        return Err(Error::new(
+            format.span(),
+            "string literal telemetry formats cannot contain `{` or `}`; use `display` to opt into Display formatting",
+        ));
+    }
+
+    Ok(format)
+}
+
 fn parse_display_format(format: LitStr) -> Result<DisplayFormat> {
     let value = format.value();
     let placeholder_count = value.matches("{}").count();
 
-    // We intentionally reject the broader formatting mini-language so users
-    // can tell at a glance whether a field is redacted entirely or routes
-    // through exactly one curated Display representation.
+    // Keep `display = ...` narrow: one Display placeholder plus fixed text.
     if value.replace("{}", "").contains(['{', '}']) {
         return Err(Error::new(
             format.span(),
-            "only a fixed string or a single `{}` placeholder is supported",
+            "display format must contain exactly one `{}` placeholder",
         ));
     }
 
     match placeholder_count {
-        0 => Ok(DisplayFormat::Literal(format)),
         1 => Ok(DisplayFormat::Interpolated(format)),
         _ => Err(Error::new(
             format.span(),
-            "only a fixed string or a single `{}` placeholder is supported",
+            "display format must contain exactly one `{}` placeholder",
         )),
     }
 }

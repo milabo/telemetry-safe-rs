@@ -203,10 +203,10 @@ fn main() {
   - Derive macro for structs and enums
 - `#[telemetry(skip)]`
   - Omits a field from telemetry output
-- `#[telemetry("{}")]`
-  - Explicitly adopts the type's `Display` output
-- `#[telemetry("prefix{}suffix")]` / `#[telemetry("literal")]`
-  - Allows a single curated `Display` placeholder or a fixed redacted label
+- `#[telemetry(display)]` / `#[telemetry(display = "prefix{}suffix")]`
+  - Explicitly opts into the field's `Display` output, optionally wrapped with fixed text
+- `#[telemetry("literal")]`
+  - Emits a fixed redacted or replacement label without reading the field value
 
 ## Safety policy
 

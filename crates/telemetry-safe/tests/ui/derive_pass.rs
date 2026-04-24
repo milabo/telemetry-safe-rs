@@ -16,7 +16,7 @@ impl std::fmt::Display for UserId {
 struct LoginAttempt {
     id: UserId,
     outcome: OutcomeLabel,
-    #[telemetry("user-{}")]
+    #[telemetry(display = "user-{}")]
     id_label: UserId,
     #[telemetry("[redacted]")]
     note: String,
@@ -35,6 +35,7 @@ impl ToTelemetry for OutcomeLabel {
 #[derive(ToTelemetry)]
 enum InternalEvent {
     Audit {
+        #[telemetry(display)]
         code: UserId,
         #[telemetry("[redacted]")]
         reason: String,
@@ -65,6 +66,6 @@ fn main() {
 
     assert_eq!(
         telemetry(&event).to_string(),
-        "Audit { code: UserId(20), reason: [redacted] }"
+        "Audit { code: 20, reason: [redacted] }"
     );
 }

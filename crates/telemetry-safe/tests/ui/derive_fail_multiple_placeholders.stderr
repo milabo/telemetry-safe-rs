@@ -1,5 +1,5 @@
-error: only a fixed string or a single `{}` placeholder is supported
- --> tests/ui/derive_fail_multiple_placeholders.rs:5:17
+error: display format must contain exactly one `{}` placeholder
+ --> tests/ui/derive_fail_multiple_placeholders.rs:5:27
   |
-5 |     #[telemetry("{}-{}")]
-  |                 ^^^^^^^
+5 |     #[telemetry(display = "{}-{}")]
+  |                           ^^^^^^^
