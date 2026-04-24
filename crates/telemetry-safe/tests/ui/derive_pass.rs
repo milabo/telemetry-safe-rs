@@ -36,6 +36,8 @@ impl ToTelemetry for OutcomeLabel {
 enum InternalEvent {
     Audit {
         code: UserId,
+        #[telemetry("[redacted]")]
+        reason: String,
         #[telemetry(skip)]
         message: String,
     },
@@ -57,8 +59,12 @@ fn main() {
 
     let event = InternalEvent::Audit {
         code: UserId(20),
+        reason: "restricted".to_owned(),
         message: "sensitive".to_owned(),
     };
 
-    assert_eq!(telemetry(&event).to_string(), "Audit { code: UserId(20) }");
+    assert_eq!(
+        telemetry(&event).to_string(),
+        "Audit { code: UserId(20), reason: [redacted] }"
+    );
 }

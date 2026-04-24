@@ -108,13 +108,19 @@ fn expand_enum(data: &DataEnum) -> Result<proc_macro2::TokenStream> {
                         let name = field.ident.as_ref().expect("named field");
 
                         if matches!(attr, Some(FieldAttr::Skip)) {
-                            // Skipped fields must not bind a local name, otherwise enum
-                            // patterns trigger `unused variable` warnings in downstream crates.
                             bindings.push(quote! { #name: _ });
                             continue;
                         }
 
-                        bindings.push(quote! { #name });
+                        if !field_attr_requires_binding(attr.as_ref()) {
+                            // Fields that never read the matched value must bind `_`,
+                            // otherwise enum patterns leak `unused variable` warnings
+                            // into downstream crates despite being intentionally ignored.
+                            bindings.push(quote! { #name: _ });
+                        } else {
+                            bindings.push(quote! { #name });
+                        }
+
                         let key = LitStr::new(&name.to_string(), name.span());
                         let value = field_expr(field, quote! { #name }, attr)?;
                         formatter.push(quote! {
@@ -135,13 +141,19 @@ fn expand_enum(data: &DataEnum) -> Result<proc_macro2::TokenStream> {
                     let mut formatter = Vec::new();
                     for (index, field) in fields.unnamed.iter().enumerate() {
                         let attr = parse_field_attr(&field.attrs).transpose()?;
+                        let binding = syn::Ident::new(&format!("field_{index}"), ident.span());
+
                         if matches!(attr, Some(FieldAttr::Skip)) {
                             bindings.push(quote! { _ });
                             continue;
                         }
 
-                        let binding = syn::Ident::new(&format!("field_{index}"), ident.span());
-                        bindings.push(quote! { #binding });
+                        if !field_attr_requires_binding(attr.as_ref()) {
+                            bindings.push(quote! { _ });
+                        } else {
+                            bindings.push(quote! { #binding });
+                        }
+
                         let value = field_expr(field, quote! { #binding }, attr)?;
                         formatter.push(quote! {
                             ds.field(&#value);
@@ -207,6 +219,13 @@ enum FieldAttr {
 enum DisplayFormat {
     Literal(LitStr),
     Interpolated(LitStr),
+}
+
+fn field_attr_requires_binding(attr: Option<&FieldAttr>) -> bool {
+    !matches!(
+        attr,
+        Some(FieldAttr::Skip | FieldAttr::Display(DisplayFormat::Literal(_)))
+    )
 }
 
 fn parse_field_attr(attrs: &[Attribute]) -> Option<Result<FieldAttr>> {
