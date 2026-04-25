@@ -75,6 +75,12 @@ This gives you:
 - `telemetry_debug(&value)`
 - `#[derive(ToTelemetry)]`
 
+To see a runnable end-to-end example, use:
+
+```bash
+cargo run -p telemetry-safe --example derive_walkthrough
+```
+
 ### 2. Add `safe_instrument` for `tracing`
 
 ```toml
