@@ -142,7 +142,7 @@ checksum = "591ef38edfb78ca4771ee32cf494cb8771944bee237a9b91fc9c1424ac4b777b"
 
 [[package]]
 name = "telemetry-safe"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "telemetry-safe-core",
  "telemetry-safe-derive",
@@ -151,11 +151,11 @@ dependencies = [
 
 [[package]]
 name = "telemetry-safe-core"
-version = "0.1.0"
+version = "0.2.0"
 
 [[package]]
 name = "telemetry-safe-derive"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -164,7 +164,7 @@ dependencies = [
 
 [[package]]
 name = "telemetry-safe-tracing"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "telemetry-safe",
  "telemetry-safe-tracing-macros",
@@ -174,7 +174,7 @@ dependencies = [
 
 [[package]]
 name = "telemetry-safe-tracing-macros"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "proc-macro2",
  "quote",

@@ -1,7 +1,8 @@
 #![deny(warnings)]
+#![allow(dead_code)]
 
-use telemetry_safe::{ToTelemetry, telemetry};
 use std::fmt::{self, Formatter};
+use telemetry_safe::{ToTelemetry, telemetry};
 
 #[derive(ToTelemetry)]
 struct UserId(u64);
@@ -14,10 +15,13 @@ impl std::fmt::Display for UserId {
 
 #[derive(ToTelemetry)]
 struct LoginAttempt {
-    id: UserId,
+    user_id: UserId,
     outcome: OutcomeLabel,
+    // Try removing the attribute.
+    // The derive will stop compiling because raw strings are not
+    // telemetry-safe by default.
     #[telemetry(display = "user-{}")]
-    id_label: UserId,
+    user_label: String,
     #[telemetry("[redacted]")]
     note: String,
     #[telemetry(skip)]
@@ -37,6 +41,8 @@ enum InternalEvent {
     Audit {
         #[telemetry(display)]
         code: UserId,
+        // Try changing this field to `#[telemetry(display)]` to see how
+        // explicit Display escape hatches differ from fixed redaction labels.
         #[telemetry("[redacted]")]
         reason: String,
         #[telemetry(skip)]
@@ -46,26 +52,29 @@ enum InternalEvent {
 
 fn main() {
     let attempt = LoginAttempt {
-        id: UserId(10),
+        user_id: UserId(42),
         outcome: OutcomeLabel("accepted"),
-        id_label: UserId(10),
-        note: "internal".to_owned(),
+        user_label: "User".to_string(),
+        note: "internal-only".to_owned(),
         email: "user@example.com".to_owned(),
     };
 
     assert_eq!(
         telemetry(&attempt).to_string(),
-        "LoginAttempt { id: UserId(10), outcome: accepted, id_label: user-10, note: [redacted] }"
+        "LoginAttempt { user_id: UserId(42), outcome: accepted, user_label: user-User, note: [redacted] }"
     );
 
     let event = InternalEvent::Audit {
-        code: UserId(20),
+        code: UserId(7),
         reason: "restricted".to_owned(),
-        message: "sensitive".to_owned(),
+        message: "contains raw customer input".to_owned(),
     };
 
     assert_eq!(
         telemetry(&event).to_string(),
-        "Audit { code: 20, reason: [redacted] }"
+        "Audit { code: 7, reason: [redacted] }"
     );
+
+    println!("{}", telemetry(&attempt));
+    println!("{}", telemetry(&event));
 }

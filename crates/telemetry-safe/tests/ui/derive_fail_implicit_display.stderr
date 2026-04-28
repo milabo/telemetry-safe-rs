@@ -1,0 +1,5 @@
+error: string literal telemetry formats cannot contain `{` or `}`; use `display` to opt into Display formatting
+ --> tests/ui/derive_fail_implicit_display.rs:5:17
+  |
+5 |     #[telemetry("{}")]
+  |                 ^^^^

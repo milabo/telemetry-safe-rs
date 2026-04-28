@@ -65,7 +65,7 @@ This project is available under either of the following licenses, at your option
 
 ```toml
 [dependencies]
-telemetry-safe = "0.1"
+telemetry-safe = "0.2"
 ```
 
 This gives you:
@@ -75,12 +75,18 @@ This gives you:
 - `telemetry_debug(&value)`
 - `#[derive(ToTelemetry)]`
 
+To see a runnable end-to-end example, use:
+
+```bash
+cargo run -p telemetry-safe --example derive_walkthrough
+```
+
 ### 2. Add `safe_instrument` for `tracing`
 
 ```toml
 [dependencies]
-telemetry-safe = "0.1"
-telemetry-safe-tracing = "0.1"
+telemetry-safe = "0.2"
+telemetry-safe-tracing = "0.2"
 tracing = "0.1"
 ```
 
@@ -91,8 +97,8 @@ In practice, the migration path is usually: define safe domain types first, then
 
 ```toml
 [dependencies]
-telemetry-safe = "0.1"
-telemetry-safe-tracing = { version = "0.1", features = ["trusted-literal"] }
+telemetry-safe = "0.2"
+telemetry-safe-tracing = { version = "0.2", features = ["trusted-literal"] }
 tracing = "0.1"
 ```
 
@@ -203,8 +209,10 @@ fn main() {
   - Derive macro for structs and enums
 - `#[telemetry(skip)]`
   - Omits a field from telemetry output
-- `#[telemetry("{}")]`
-  - Explicitly adopts the type’s `Display` output
+- `#[telemetry(display)]` / `#[telemetry(display = "prefix{}suffix")]`
+  - Explicitly opts into the field's `Display` output, optionally wrapped with fixed text
+- `#[telemetry("literal")]`
+  - Emits a fixed redacted or replacement label without reading the field value
 
 ## Safety policy
 

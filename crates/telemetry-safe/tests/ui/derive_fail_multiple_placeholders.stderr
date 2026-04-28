@@ -1,0 +1,5 @@
+error: display format must contain exactly one `{}` placeholder
+ --> tests/ui/derive_fail_multiple_placeholders.rs:5:27
+  |
+5 |     #[telemetry(display = "{}-{}")]
+  |                           ^^^^^^^

@@ -17,8 +17,8 @@ default = []
 trusted-literal = []
 
 [dependencies]
-telemetry-safe = { path = "../telemetry-safe", version = "0.1.0" }
-telemetry-safe-tracing-macros = { path = "../telemetry-safe-tracing-macros", version = "0.1.0" }
+telemetry-safe = { path = "../telemetry-safe", version = "0.2.0" }
+telemetry-safe-tracing-macros = { path = "../telemetry-safe-tracing-macros", version = "0.2.0" }
 tracing.workspace = true
 
 [dev-dependencies]
